@@ -1,0 +1,44 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: redis-cli
+  labels:
+    app: redis-cli
+    keel.sh/policy: force
+    keel.sh/trigger: webhooks
+spec:
+  replicas: 1
+  minReadySeconds: 5
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 100%
+      maxUnavailable: 0%
+  revisionHistoryLimit: 5
+  selector:
+    matchLabels:
+      app: redis-cli
+  template:
+    metadata:
+      name: redis-cli
+      labels:
+        app: redis-cli
+    spec:
+      containers:
+      - name: redis-cli
+        image: jbergknoff/postgresql-client
+        imagePullPolicy: Always
+        securityContext:
+          privileged: false
+        command:
+        - tail
+        args:
+        - -f
+        - /dev/null
+        resources:
+          requests:
+            memory: 320Mi
+            cpu: 240m
+          limits:
+            memory: 400Mi
+            cpu: 300m

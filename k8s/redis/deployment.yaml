@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    name: redis
+    component: cache
+  name: redis
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: redis
+  template:
+    metadata:
+      labels:
+        name: redis
+        component: cache
+    spec:
+      containers:
+      - name: redis
+        image: redis
+        imagePullPolicy: Always
+        args: ["/etc/redis.conf"] #, "--requirepass", "$(REDIS_PASS)"]
+        ports:
+        - containerPort: 6379
+          name: redis
+        env:
+        - name: MASTER
+          value: "true"
+        - name: CONF
+          valueFrom:
+            configMapKeyRef:
+              name: redis
+              key: redis.conf
+        # - name: REDIS_PASS
+        #   valueFrom:
+        #     secretKeyRef:
+        #       name: redis
+        #       key: BOILERPLATE_REDIS_PASS
+        resources:
+          requests:
+            memory: 160Mi
+            cpu: 80m
+          limits:
+            memory: 200Mi
+            cpu: 100m
+        volumeMounts:
+        - name: "config-volume"
+          mountPath: "/etc/redis.conf"
+          subPath: redis.conf
+      volumes:
+        - name: "config-volume"
+          configMap:
+            name: "redis"

@@ -1,0 +1,19 @@
+language: elixir
+cache:
+  directories:
+    - $HOME/.mix
+elixir:
+  - 1.9.1
+env:
+  global:
+    - MIX_ENV=test
+    - BOILERPLATE_PORT=4000
+    - BOILERPLATE_ALLOWED_ORIGINS=//localhost:4000,//localhost:3000
+script:
+  - mix deps.get
+  - mix format --check-formatted
+  - mix credo
+  - mix test
+  - mix coveralls.travis
+notifications:
+  email: false

@@ -1,0 +1,62 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: boilerplate
+  labels:
+    app: boilerplate
+    keel.sh/policy: force
+    keel.sh/trigger: webhooks
+spec:
+  replicas: 2
+  minReadySeconds: 5
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 100%
+      maxUnavailable: 0%
+  revisionHistoryLimit: 5
+  selector:
+    matchLabels:
+      app: boilerplate
+  template:
+    metadata:
+      name: boilerplate
+      labels:
+        app: boilerplate
+    spec:
+      containers:
+      - name: boilerplate
+        image: cristopherrodrigues/phoenix-graphql-postgresql-api-boilerplate:latest
+        ports:
+        - containerPort: 4000
+        imagePullPolicy: Always
+        securityContext:
+          privileged: false
+        livenessProbe:
+          httpGet:
+            path: /monitoring/health_check
+            port: 4000
+          initialDelaySeconds: 45
+          periodSeconds: 3
+          failureThreshold: 2
+        envFrom:
+        - configMapRef:
+            name: boilerplate
+        - secretRef:
+            name: boilerplate
+        env:
+        - name: BOILERPLATE_DATADOG_HOST
+          valueFrom:
+            fieldRef:
+              fieldPath: status.hostIP
+        command:
+        - /app/boilerplate/rel/boilerplate/bin/boilerplate
+        args:
+        - start
+        resources:
+          requests:
+            memory: 320Mi
+            cpu: 240m
+          limits:
+            memory: 400Mi
+            cpu: 300m

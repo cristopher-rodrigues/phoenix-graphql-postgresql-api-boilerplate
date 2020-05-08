@@ -1,0 +1,21 @@
+{
+    "name": "boilerplate-elasticsearch-sink",
+    "config": {
+        "name": "boilerplate-elasticsearch-sink",
+        "connector.class": "io.confluent.connect.elasticsearch.ElasticsearchSinkConnector",
+        "type.name": "users",
+        "topics": "postgresql.public.users",
+        "tasks.max": "1",
+        "connection.url": "http://elasticsearch:9200",
+        "key.ignore": false,
+        "transforms":"createKey,extractInt",
+        "transforms.createKey.type":"org.apache.kafka.connect.transforms.ValueToKey",
+        "transforms.createKey.fields":"id",
+        "transforms.extractInt.type":"org.apache.kafka.connect.transforms.ExtractField$Key",
+        "transforms.extractInt.field":"id",
+        "value.converter": "io.confluent.connect.avro.AvroConverter",
+        "value.converter.schema.registry.url": "http://kafka:8081",
+        "value.converter.value.subject.name.strategy": "io.confluent.kafka.serializers.subject.RecordNameStrategy",
+        "value.subject.name.strategy": "io.confluent.kafka.serializers.subject.RecordNameStrategy"
+    }
+}

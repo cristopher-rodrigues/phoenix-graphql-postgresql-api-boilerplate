@@ -1,0 +1,78 @@
+version: '3.4'
+volumes:
+  elasticsearch:
+  boilerplate-redis:
+services:
+  kibana:
+    image: docker.elastic.co/kibana/kibana:7.2.0
+    ports:
+      - "5601:5601"
+    depends_on:
+      - elasticsearch
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.2.0
+    environment:
+      - node.name=elasticsearch
+      - cluster.name=docker-cluster
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - cluster.initial_master_nodes=elasticsearch
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    volumes:
+      - elasticsearch:/usr/local/share/elasticsearch/data
+  app:
+    container_name: boilerplate-app
+    build:
+      context: .
+      target: builder
+    ports:
+      - '4000:4000'
+    command: /bin/sh -c "mix do deps.get && tail -f /dev/null"
+    environment: 
+      - BOILERPLATE_ELASTIC_DEFAULT_SIZE=10
+    volumes:
+      - .:/app
+    depends_on:
+      - elasticsearch
+      - postgresql
+      - redis
+  redis:
+    image: redis:5.0.6-alpine
+    ports:
+      - '6381:6379'
+    volumes:
+      - boilerplate-redis:/data
+  kafka:
+    container_name: kafka
+    image: landoop/fast-data-dev:latest
+    ports:
+      - "9092:9092"
+      - "8081:8081"
+      - "8082:8082"
+      - "8083:8083"
+      - "2181:2181"
+      - "3030:3030"
+      - "9581-9585:9581-9585"
+    environment:
+      - ADV_HOST=localhost # Use your 'docker-machine ip' or 'localhost' if linux
+  postgresql:
+    image: debezium/postgres
+    container_name: postgres
+    environment:
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=boilerplate_dev
+      - PGDATA=/var/lib/postgresql/data/pgdata
+    ports:
+      - '5435:5432'
+  pg_data:
+    image: alpine:latest
+    volumes:
+      - ./postgresql:/var/lib/postgresql/data/pgdata
+    command: "true"

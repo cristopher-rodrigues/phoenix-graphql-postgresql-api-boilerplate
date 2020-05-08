@@ -1,0 +1,22 @@
+{
+    "name": "boilerplate-postgresql-source",
+    "config": {
+        "connector.class": "io.debezium.connector.postgresql.PostgresConnector",
+        "database.hostname": "postgresql",
+        "database.port": "5432",
+        "database.user": "user",
+        "database.password": "password",
+        "database.dbname": "boilerplate_dev",
+        "database.server.name": "postgresql",
+        "table.whitelist": "public.users",
+        "transforms": "unwrap",
+        "transforms.unwrap.type": "io.debezium.transforms.UnwrapFromEnvelope",
+        "message.key.columns": "public.users:uuid",
+        "time.precision.mode": "connect",
+        "plugin.name": "wal2json_rds",
+        "value.converter": "io.confluent.connect.avro.AvroConverter",
+        "value.converter.schema.registry.url": "http://kafka:8081",
+        "value.converter.value.subject.name.strategy": "io.confluent.kafka.serializers.subject.RecordNameStrategy",
+        "value.subject.name.strategy": "io.confluent.kafka.serializers.subject.RecordNameStrategy"
+    }
+}

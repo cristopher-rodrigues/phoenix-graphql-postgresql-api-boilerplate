@@ -1,0 +1,14 @@
+{
+  "skip_files": [
+    ".*params.ex",
+    ".*behaviour.ex",
+    "lib/boilerplate.ex",
+    "lib/boilerplate_web.ex",
+    "lib/boilerplate/repo.ex",
+    "lib/boilerplate/tracer.ex",
+    "lib/boilerplate/metrics.ex",
+    "lib/boilerplate/application.ex",
+    "lib/boilerplate_web/endpoint.ex",
+    "lib/boilerplate_web/spandex_metadata.ex"
+  ]
+}
