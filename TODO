@@ -1,0 +1,332 @@
+https://github.com/akoutmos/doctor
+
+docker pull dpage/pgadmin4
+
+https://github.com/DockYard/ecto_fixtures
+
+remover https://github.com/phoenixframework/phoenix_live_reload e adicionar {:phoenix_live_reload, "~> 1.2", only: :dev},
+
+phoenix 1.5
+
+test for scroll withtout query params
+codacy
+travis
+shield do coverrals
+terraform
+  readme 
+  redis
+configs https://github.com/cristopher-rodrigues/phoenix-graphql-postgresql-api-boilerplate/tree/master/config
+readme
+   step by step to create new things => https://github.com/aichbauer/express-graphql-boilerplate
+https://github.com/cristopher-rodrigues/phoenix-graphql-postgresql-api-boilerplate/tree/master/k8s/kops
+Authentication via JWT?
+FRONT-END
+
+----
+
+kustomize
+kops
+istio
+colocar redis/pg
+   no terraform
+terraform + https://www.runatlantis.io/ + argocd
+kustomize
+onde to usando o cache?
+teste de carga nos subscriptions
+simple chat example
+https://www.codacy.com/
+K8s
+kafka/event-driven
+
+----
+
+
+Elastix.Search.search("http://localhost:9200", "users", ["users"], %{query: %{match_all: %{}}})
+Elastix.Search.search("http://localhost:9200", "users", ["users"], %{query: %{match: %{name: %{query: "ksdnsknsk"}}}})
+Elastix.Search.search("http://localhost:9200", "users", ["users"], %{query: %{term: %{name: "ksdnsknsk"}}})
+Elastix.Search.search("http://localhost:9200", "users", ["users"], %{query: %{match: %{name: "ksdnsknsk"}}})
+Elastix.Search.search("http://localhost:9200", "users", ["users"], %{query: %{query_string: %{query: "ksdnsknsk", default_field: "name"}}})
+Elastix.Search.search("http://localhost:9200", "users", ["users"], %{query: %{bool: %{should: %{match: %{name: "ksdnsknsk"}}}}})
+Elastix.Search.search("http://localhost:9200", "users", ["users"], %{query: %{bool: %{must: %{match: %{name: "ksdnsknsk"}}}}})
+\o/ Elastix.Search.search("http://localhost:9200", "postgresql.public.users", ["users"], %{query: %{query_string: %{query: "*ks*", default_field: "name"}}})
+
+
+q = %{
+  query: %{
+    bool: %{
+      must: [
+        %{
+          query_string: %{query: "*J*", default_field: "name"}
+        }
+      ],
+      must_not: %{
+        exists: %{
+          field: "removed_at"
+        }
+      }
+    }
+  }
+}
+
+Elastix.Search.search("http://localhost:9200", "postgresql.public.users", ["users"], q)
+
+Elastix.Document.index("http://localhost:9200", "users", "users", "42", %{id: 123, name: "dksnd", uuid: Ecto.UUID.generate, inserted_at: DateTime.utc_now, updated_at: DateTime.utc_now})
+Boilerplate.Users.Scroll.call(%Boilerplate.Users.Scroll.Params{query: "ks"})
+
+    
+      {:excoveralls, "~> 0.10", only: :test},
+
+
+
+como fazer a subscription retornar tudo de user e n apenas oq o user passou na mutations?
+
+
+
+----
+
+
+provider "aws" {
+  profile    = "default"
+  region     = "us-east-1"
+
+
+  access_key = "my-access-key"
+  secret_key = "my-secret-key"
+}
+
+resource "aws_instance" "example" {
+  ami           = "ami-2757f631"
+  instance_type = "t2.micro"
+}
+
+resource "aws_eip" "ip" {
+    vpc = true
+    instance = aws_instance.example.id
+}
+
+# New resource for the S3 bucket our application will use.
+resource "aws_s3_bucket" "example" {
+  # NOTE: S3 bucket names must be unique across _all_ AWS accounts, so
+  # this name must be changed before applying this example to avoid naming
+  # conflicts.
+  bucket = "terraform-getting-started-guide"
+  acl    = "private"
+}
+
+# Change the aws_instance we declared earlier to now include "depends_on"
+resource "aws_instance" "example" {
+  ami           = "ami-2757f631"
+  instance_type = "t2.micro"
+
+  # Tells Terraform that this EC2 instance must be created only after the
+  # S3 bucket has been created.
+  depends_on = [aws_s3_bucket.example]
+}
+
+
+-----
+
+
+
+ resource "aws_db_subnet_group" "elastic-cache" {
+   name       = "${var.namespace}-${var.name}"
+   subnet_ids = ["${var.private_subnets_ids}"]
+   tags = "${var.tags}"
+ }
+ // Elasticache subnet group required to create the redis inside the VPC
+ resource "aws_elasticache_subnet_group" "pipefy-elasticache" {
+   name       = "${var.namespace}-${var.name}"
+   subnet_ids = ["${var.private_subnets_ids}"]
+ }
+ resource "aws_elasticache_replication_group" "redis" {
+   automatic_failover_enabled    = true
+   availability_zones            = ["${var.azs}"]
+   replication_group_id          = "${var.namespace}-${var.name}"
+   replication_group_description = "${var.namespace} ${var.name} redis"
+   node_type                     = "${var.node_type}"
+   number_cache_clusters         = "${length(var.azs)}"
+   engine                        = "redis"
+   engine_version                = "${var.redis_engine_version}"
+   parameter_group_name          = "${var.redis_parameter_group_name}"
+   port                          = 6379
+   subnet_group_name             = "${aws_elasticache_subnet_group.pipefy-elasticache.name}"
+   security_group_ids            = ["${aws_security_group.elasticache.id}"]
+   transit_encryption_enabled    = "${var.enable_redis_transit_encryption}"
+   at_rest_encryption_enabled    = "${var.enable_redis_encryption}"
+   auth_token                    = "${var.auth_token}"
+   tags                          = "${var.tags}"
+ }
+// Generate a random string for auth token, no special chars
+resource "random_string" "auth_token" {
+  length = 64
+  special = false
+}
+resource "aws_security_group" "elasticache" {
+  name        = "${var.namespace}-${var.name}"
+  description = "Managed by Terraform"
+  vpc_id      = "${var.vpc_id}"
+  ingress {
+    from_port = 6379
+    to_port   = 6379
+    protocol  = "tcp"
+    cidr_blocks = [
+      "${var.cidr}",
+      "10.100.0.0/16"
+    ]
+  }
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+output "auth_token" {
+  value = "${random_string.auth_token.result}"
+}
+
+
+
+================================================================
+
+
+
+
+kops export kubecfg $KOPS_CLUSTER_NAME # Remember when you installed kubectl earlier? The configuration for your cluster was automatically generated and written to ~/.kube/config for you!
+
+
+
+
+
+
+https://aws.amazon.com/getting-started/hands-on/get-a-domain/
+
+https://kops.sigs.k8s.io/getting_started/aws/#configure-dns
+
+dig ns kops.boilerplate.io
+
+
+
+export AWS_ACCESS_KEY_ID=$(aws configure get aws_access_key_id) # tf output
+export AWS_SECRET_ACCESS_KEY=$(aws configure get aws_secret_access_key) # tf output
+
+
+
+------
+
+
+https://kops.sigs.k8s.io/boot-sequence/
+
+export KOPS_STATE_STORE=s3://k8s-us-west
+export KOPS_CLOUD=aws
+export ZONE="us-west-1a"
+export MASTER_ZONES="us-west-1a"
+export NAME=k8s.example.com
+export K8S_VERSION=1.6.4
+export NETWORKCIDR="10.240.0.0/16"
+export MASTER_SIZE="m3.large"
+export WORKER_SIZE="m4.large"
+Next you call the kops command to create the cluster in your terminal:
+
+kops create cluster $NAME              \
+   --cloud=$KOPS_CLOUD                      \
+   --zones="$ZONE"                     \
+   --kubernetes-version=$K8S_VERSION   \
+   --master-zones="$MASTER_ZONES"      \
+   --node-count=3                      \
+   --node-size="$WORKER_SIZE"          \
+   --master-size="$MASTER_SIZE"        \
+   --network-cidr=${NETWORKCIDR}       \
+   --dns-zone=ZVO7KL181S5AP            \
+   --ssh-public-key=$HOME/.ssh/lab_no_password.pub
+
+
+kops get --name $NAME -o yaml > a_fun_name_you_will_remember.yml
+
+
+
+https://kops.sigs.k8s.io/horizontal_pod_autoscaling/
+
+
+
+--------------------------------TF--------------------------------
+https://www.terraform.io/docs/backends/index.html
+
+https://registry.terraform.io/providers/hashicorp/aws/2.59.0/docs#authentication
+
+https://learn.hashicorp.com/terraform/getting-started/install.html
+terraform -install-autocomplete
+https://learn.hashicorp.com/terraform/getting-started/build
+
+
+
+
+terraform.tfstate # https://www.terraform.io/docs/state/remote.html || https://learn.hashicorp.com/terraform/getting-started/remote
+
+
+# Backend Reference
+terraform {
+  required_version = "~> 0.12.0"
+
+  backend "remote" {}
+}
+
+terraform {
+  backend "remote" {
+    organization = "<ORG_NAME>"
+
+    workspaces {
+      name = "Example-Workspace"
+    }
+  }
+}
+
+
+
+
+----
+
+
+terraform destroy
+
+
+
+----- VARIABLES
+
+variable "amis" {
+  type = "map"
+  default = {
+    "us-east-1" = "ami-b374d5a5"
+    "us-west-2" = "ami-4b32be2b"
+  }
+}
+
+variable "region" {}
+variable "amis" {
+  type = "map"
+}
+
+amis = {
+  "us-east-1" = "ami-abc123"
+  "us-west-2" = "ami-def456"
+}
+
+
+var.amis[var.region]
+ 
+
+variable "cidrs" { type = list }
+cidrs = [ "10.0.0.0/16", "10.1.0.0/16" ]
+
+
+
+
+---
+
+output "ip" {
+  value = aws_eip.ip.public_ip
+}
+
+
+terraform output ip
+
